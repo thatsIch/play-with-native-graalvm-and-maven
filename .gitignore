@@ -13,5 +13,8 @@
 # include documentation
 !README.md
 
+# include build files
+!pom.xml
+
 # include source files
 !/src
