@@ -46,9 +46,9 @@ jobs:
     - name: Compile native image to native exe because Maven expects it as .exe
       shell: cmd
       run: |
-      call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-      cd %JAVA_HOME%
-      bin\native-image.cmd -jar lib\graalvm\svm-driver.jar -H:Path=.\bin
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+        cd %JAVA_HOME%
+        bin\native-image.cmd -jar lib\graalvm\svm-driver.jar -H:Path=.\bin
       
     # we need to set the vc environment before calling native-image because the environment is lost between steps
     - name: Compile Application to Native
