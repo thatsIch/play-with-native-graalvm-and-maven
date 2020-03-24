@@ -1,5 +1,5 @@
-# ignore everything
-*
+# ignore everything - /* is new in comparison to just *
+/*
 
 # include git files
 !.gitignore
@@ -8,10 +8,10 @@
 !dependencies.config
 
 # include github files
-!.github
+!/.github
 
 # include documentation
 !README.md
 
 # include source files
-!src
+!/src
