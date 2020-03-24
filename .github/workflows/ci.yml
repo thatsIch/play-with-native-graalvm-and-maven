@@ -1,0 +1,69 @@
+name: Build Hello World
+on: push
+jobs:
+  build-java-app-natively-on-windows-with-graalvm:
+    runs-on: windows-2019
+
+    env:
+      GRAALVM_HOME: C:\Program Files\GraalVM\graalvm-ce-java11-20.0.0
+      JAVA_HOME: C:\Program Files\GraalVM\graalvm-ce-java11-20.0.0
+      VISUAL_STUDIO_BUILD_TOOLS_TOME: C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Tools\MSVC\14.16.27023\bin\Hostx64\x64
+
+    steps:
+    - name: Checkout Source
+      uses: actions/checkout@v2
+
+    - name: Check Project State
+      run: ls
+
+    - name: Install Dependencies
+      uses: crazy-max/ghaction-chocolatey@v1
+      with:
+        args: install dependencies.config -y
+
+    - name: Put Compiler onto Path
+      run: echo "::add-path::C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Tools\MSVC\14.16.27023\bin\Hostx64\x64"
+
+    - name: Check Compiler State
+      run: |
+        ls "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Tools\MSVC\14.16.27023\bin\Hostx64\x64"
+        (Get-Item -Path Env:Path).Value.Split(";")
+        cl.exe
+
+    - name: Setup GraalVM
+      run: echo "::add-path::C:\Program Files\GraalVM\graalvm-ce-java11-20.0.0\bin"
+
+    - name: Check GraalVM State
+      run: java -version
+
+    - name: Setup Native-Image
+      shell: cmd
+      run: |
+        gu install native-image
+        native-image.cmd
+
+    # we need to set the vc environment before calling native-image because the environment is lost between steps
+    - name: Compile native image to native exe because Maven expects it as .exe
+      shell: cmd
+      run: |
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+      cd %JAVA_HOME%
+      bin\native-image.cmd -jar lib\graalvm\svm-driver.jar -H:Path=.\bin
+      
+    # we need to set the vc environment before calling native-image because the environment is lost between steps
+    - name: Compile Application to Native
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"  
+        mvn package
+        ls target
+
+    - name: Execute Application
+      shell: cmd
+      run: target\graalvm-mvn-package.exe
+
+    - name: Upload Application as Artifacft
+      uses: actions/upload-artifact@v1
+      with:
+        name: cli-app
+        path: target\graalvm-mvn-package.exe
